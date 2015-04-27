@@ -1,0 +1,70 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/bt_get"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TEST GET"/>
+
+    <Button
+        android:id="@+id/bt_post"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_get"
+        android:text="TEST POST"/>
+
+    <Button
+        android:id="@+id/bt_download"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_post"
+        android:text="TEST DOWNLOAD"/>
+
+    <Button
+        android:id="@+id/bt_upload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_download"
+        android:text="TEST UPLOAD [方法1：字节流]"/>
+
+    <Button
+        android:id="@+id/bt_upload_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_upload"
+        android:text="TEST UPLOAD [方法2: 字节流]"/>
+
+    <Button
+        android:id="@+id/bt_upload_3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_upload_2"
+        android:text="TEST UPLOAD [方法2: 字符流]"/>
+
+    <Button
+        android:id="@+id/bt_upload_4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_upload_3"
+        android:text="TEST UPLOAD [方法2: utf-8]"/>
+
+    <Button
+        android:id="@+id/bt_websocket_connect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_upload_4"
+        android:text="WEBSOCKET CONNECT"/>
+
+    <Button
+        android:id="@+id/bt_websocket_send"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_websocket_connect"
+        android:text="TEST WEBSOCKET SEND"/>
+
+</RelativeLayout>
