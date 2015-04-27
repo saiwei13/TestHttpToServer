@@ -53,7 +53,7 @@
         android:layout_below="@+id/bt_upload_3"
         android:text="TEST UPLOAD [方法2: utf-8]"/>
 
-    <Button
+<!--    <Button
         android:id="@+id/bt_websocket_connect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -65,6 +65,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/bt_websocket_connect"
-        android:text="TEST WEBSOCKET SEND"/>
+        android:text="TEST WEBSOCKET SEND"/>-->
+
+    <Button
+        android:id="@+id/bt_register"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_upload_4"
+        android:text="TEST REGISTER"/>
+
+    <Button
+        android:id="@+id/bt_login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_register"
+        android:text="TEST LOGIN"/>
 
 </RelativeLayout>

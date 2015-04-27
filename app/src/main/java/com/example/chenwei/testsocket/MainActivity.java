@@ -39,6 +39,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,7 +53,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private Button mBtPost;
     private Button mBtDownload;
     private Button mBtUpload,mBtUpload_2,mBtUpload_3,mBtUpload_4;
-    private Button mBtWebsocketConnect,mBtWebsocketSend;
+//    private Button mBtWebsocketConnect,mBtWebsocketSend;
+    private Button mBtRegister;
+    private Button mBtLogin;
 
     private final int MSG_DOWNLOAD_SUCCESS = 1;
     private final int MSG_DOWNLOAD_FAIL = 2;
@@ -104,11 +108,17 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mBtUpload_4 = (Button) this.findViewById(R.id.bt_upload_4);
         mBtUpload_4.setOnClickListener(this);
 
-        mBtWebsocketConnect = (Button) this.findViewById(R.id.bt_websocket_connect);
-        mBtWebsocketConnect.setOnClickListener(this);
+//        mBtWebsocketConnect = (Button) this.findViewById(R.id.bt_websocket_connect);
+//        mBtWebsocketConnect.setOnClickListener(this);
+//
+//        mBtWebsocketSend = (Button) this.findViewById(R.id.bt_websocket_send);
+//        mBtWebsocketSend.setOnClickListener(this);
 
-        mBtWebsocketSend = (Button) this.findViewById(R.id.bt_websocket_send);
-        mBtWebsocketSend.setOnClickListener(this);
+        mBtRegister = (Button) this.findViewById(R.id.bt_register);
+        mBtRegister.setOnClickListener(this);
+
+        mBtLogin = (Button) this.findViewById(R.id.bt_login);
+        mBtLogin.setOnClickListener(this);
 
     }
 
@@ -696,6 +706,155 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     }
 
+
+    /**
+     * 测试　注册接口
+     */
+    private void testRegister(){
+
+        Log.i(TAG,"testRegister() ");
+        String Server_url="http://192.168.1.104:8888/register";
+        URL url = null;
+        HttpURLConnection con = null;
+        OutputStream output = null;
+        InputStream in = null;
+
+        try {
+            url = new URL(Server_url);
+            Log.i(TAG,"url="+url.toString());
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            con.setConnectTimeout(10000);
+
+            JSONObject json=new JSONObject();
+            try {
+                json.put("username","bb");
+                json.put("pwd",md5("123456"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            output = con.getOutputStream();
+            output.write(json.toString().getBytes());
+
+            Log.i(TAG, "注册：　" + json.toString());
+
+            readStream(con.getInputStream());
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            Log.e(TAG,e.toString());
+        } catch (IOException e) {
+            Log.e(TAG,e.toString());
+            e.printStackTrace();
+        }  finally {
+            if(con != null) con.disconnect();
+            if(output != null) try {
+                output.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 测试　登陆接口
+     */
+    private void testLogin(){
+
+        Log.i(TAG,"testLogin() ");
+        String Server_url="http://192.168.1.104:8888/login";
+        URL url = null;
+        HttpURLConnection con = null;
+        OutputStream output = null;
+        InputStream in = null;
+
+        try {
+            url = new URL(Server_url);
+            Log.i(TAG,"url="+url.toString());
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            con.setConnectTimeout(10000);
+
+            JSONObject json=new JSONObject();
+            try {
+                json.put("username","bb");
+                json.put("pwd",md5("12345"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            output = con.getOutputStream();
+            output.write(json.toString().getBytes());
+
+
+            Log.i(TAG, "登陆：　" + json.toString());
+
+            readStream(con.getInputStream());
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            Log.e(TAG,e.toString());
+        } catch (IOException e) {
+            Log.e(TAG,e.toString());
+            e.printStackTrace();
+        }  finally {
+            if(con != null) con.disconnect();
+            if(output != null) try {
+                output.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void readStream(InputStream in) {
+
+        Log.i(TAG,"readStream()");
+
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(in));
+            String line = "";
+            StringBuffer sb = new StringBuffer();
+
+
+            while ((line = reader.readLine()) != null) {
+                sb.append(line+"\n");
+            }
+
+            Log.i(TAG,"sb = "+sb.toString());
+        } catch (IOException e) {
+            Log.e(TAG, ""+e.toString());
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public String md5(String string) {
+        byte[] hash;
+        try {
+            hash = MessageDigest.getInstance("MD5").digest(string.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Huh, MD5 should be supported?", e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Huh, UTF-8 should be supported?", e);
+        }
+        StringBuilder hex = new StringBuilder(hash.length * 2);
+        for (byte b : hash) {
+            if ((b & 0xFF) < 0x10) hex.append("0");
+            hex.append(Integer.toHexString(b & 0xFF));
+        }
+        return hex.toString();
+    }
+
     @Override
     public void onClick(View v) {
         if(mBtGet == v){
@@ -800,10 +959,38 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 }
             });
             thread.start();
-        }else if(mBtWebsocketConnect == v){
-            test("WEBSOCKET");
-        }else if(mBtWebsocketSend == v){
-            test("WEBSOCKET_SEND");
+        }
+//        else if(mBtWebsocketConnect == v){
+//            test("WEBSOCKET");
+//        }else if(mBtWebsocketSend == v){
+//            test("WEBSOCKET_SEND");
+//        }
+
+        else if(mBtRegister == v){
+            Thread thread = new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    try {
+                        testRegister();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            thread.start();
+
+        } else if(mBtLogin == v){
+            Thread thread = new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    try {
+                        testLogin();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            thread.start();
         }
     }
 }
