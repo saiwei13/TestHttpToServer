@@ -1,6 +1,14 @@
 package com.example.chenwei.testsocket;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.DownloadManager;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
@@ -9,6 +17,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codebutler.android_websockets.WebSocketClient;
@@ -49,6 +58,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     private final String TAG = "chenwei.TestSocket";
 
+    private TextView mTvApkInfo;
+
     private Button mBtGet;
     private Button mBtPost;
     private Button mBtDownload;
@@ -56,13 +67,22 @@ public class MainActivity extends Activity implements View.OnClickListener{
 //    private Button mBtWebsocketConnect,mBtWebsocketSend;
     private Button mBtRegister;
     private Button mBtLogin;
+    private Button mBtProgress;
+    private Button mBtInstall;
+    private Button mBtUpdate;
 
     private final int MSG_DOWNLOAD_SUCCESS = 1;
     private final int MSG_DOWNLOAD_FAIL = 2;
     private final int MSG_UPLOAD_SUCCESS = 3;
     private final int MSG_UPLOAD_FAIL = 4;
+    private final int MSG_UPDATE_SUCCESS = 5;
+    private final int MSG_UPDATE_FAIL = 6;
 
     private final int MAXBufferSize = 1 * 1024 * 1024;
+
+    private String packageName;
+    private int versionCode;
+    private String versionName;
 
     private Handler mHandle = new Handler(){
         @Override
@@ -76,16 +96,39 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 Toast.makeText(MainActivity.this,"上传成功",Toast.LENGTH_SHORT).show();
             } else if(msg.what == MSG_UPLOAD_FAIL){
                 Toast.makeText(MainActivity.this,"上传失败",Toast.LENGTH_SHORT).show();
+            } else if(msg.what == MSG_UPDATE_SUCCESS){
+//                Log.i(TAG,"handleMessage() 检查更新成功");test
+//                Toast.makeText(MainActivity.this,"检查更新成功",Toast.LENGTH_SHORT).show();
+                JSONObject json = null;
+                try {
+                    json = new JSONObject((String)msg.obj);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                String url = null;
+                if (json != null) {
+                    try {
+                        url = json.getString("url");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                showUpdataDialog(SERVER_HOST+url);
+            } else if(msg.what == MSG_UPDATE_FAIL){
+                Toast.makeText(MainActivity.this,"检查更新失败",Toast.LENGTH_SHORT).show();
             }
         }
     };
 
-//    private final String URL="http://10.61.137.26:8888/";192.168.1.104
-    private final String URL="http://192.168.1.104:8888/";
+    private final String SERVER_HOST="http://10.61.137.26:8888/";
+//    private final String URL="http://192.168.1.104:8888/";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mTvApkInfo = (TextView) this.findViewById(R.id.tv_apkinfo);
 
         mBtGet = (Button) this.findViewById(R.id.bt_get);
         mBtGet.setOnClickListener(this);
@@ -120,6 +163,34 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mBtLogin = (Button) this.findViewById(R.id.bt_login);
         mBtLogin.setOnClickListener(this);
 
+        mBtProgress = (Button) this.findViewById(R.id.bt_progress);
+        mBtProgress.setOnClickListener(this);
+
+        mBtInstall = (Button) this.findViewById(R.id.bt_install);
+        mBtInstall.setOnClickListener(this);
+
+        mBtUpdate = (Button) this.findViewById(R.id.bt_update);
+        mBtUpdate.setOnClickListener(this);
+
+        packageName = getPackageName();
+        try {
+            versionCode = getPackageManager().getPackageInfo(getPackageName(),0).versionCode;
+            versionName = getPackageManager().getPackageInfo(getPackageName(),0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        mTvApkInfo.setText("apk 包名 : "+packageName+"\n"
+            +"version_code:"+versionCode+"\n"
+                +"version_name:"+versionName
+        );
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
     }
 
     @Override
@@ -151,35 +222,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         }
     }
 
-
-    private void test(String method) {
-
-        if (TextUtils.isEmpty(method)) {
-            method = "GET";
-        }
-
-        if (method == "GET") {
-            testGet();
-        } else if (method == "POST") {
-            testPost();
-        } else if (method == "DOWNLOAD") {
-            download();
-        } else if (method == "UPLOAD") {
-            upload();
-        } else if(method == "UPLOAD_2"){
-            upload_2();
-        } else if(method == "UPLOAD_3"){
-            upload_3();
-        } else if(method == "UPLOAD_4"){
-            upload_4();
-        } else if(method == "WEBSOCKET"){
-            websocketConnect();
-        } else if(method == "WEBSOCKET_SEND"){
-            websocketSend();
-        }
-    }
-
-    WebSocketClient client = null;
+    private WebSocketClient client = null;
 
     private void websocketConnect(){
 
@@ -237,7 +280,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         URL url = null;
         HttpURLConnection con = null;
         try {
-            url = new URL(URL + "register");
+            url = new URL(SERVER_HOST + "register");
             con = (HttpURLConnection) url.openConnection();
 
             con.setRequestMethod("GET");
@@ -272,7 +315,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         URL url = null;
         HttpURLConnection con = null;
         try {
-            url = new URL(URL + "register");
+            url = new URL(SERVER_HOST + "register");
 
             Log.i(TAG, "url=" + url.toString());
             con = (HttpURLConnection) url.openConnection();
@@ -331,7 +374,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         InputStream in = null;
 
         try {
-            url = new URL(URL + "download");
+            url = new URL(SERVER_HOST + "download");
 
             Log.i(TAG, "url=" + url.toString());
             con = (HttpURLConnection) url.openConnection();
@@ -416,7 +459,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
             HttpPost httppost = new HttpPost(
-                    URL + "upload"); // server
+                    SERVER_HOST + "upload"); // server
 
             MultipartEntity reqEntity = new MultipartEntity();
 
@@ -476,7 +519,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         try
         {
-            URL url = new URL(URL + "upload");
+            URL url = new URL(SERVER_HOST + "upload");
             connection = (HttpURLConnection) url.openConnection();
 
             // Allow Inputs &amp; Outputs.
@@ -557,7 +600,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         try
         {
-            URL url = new URL(URL + "upload");
+            URL url = new URL(SERVER_HOST + "upload");
             connection = (HttpURLConnection) url.openConnection();
 
             // Allow Inputs &amp; Outputs.
@@ -642,7 +685,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         try
         {
-            URL url = new URL(URL + "upload");
+            URL url = new URL(SERVER_HOST + "upload");
             connection = (HttpURLConnection) url.openConnection();
 
             // Allow Inputs &amp; Outputs.
@@ -808,19 +851,50 @@ public class MainActivity extends Activity implements View.OnClickListener{
         }
     }
 
-    private void readStream(InputStream in) {
+//    private void readStream(InputStream in) {
+//
+//        Log.i(TAG,"readStream()");
+//
+//        BufferedReader reader = null;
+//        try {
+//            reader = new BufferedReader(new InputStreamReader(in));
+//            String line = "";
+//            StringBuffer sb = new StringBuffer();
+//
+//
+//            while ((line = reader.readLine()) != null) {
+//                sb.append(line+"\n");
+//            }
+//
+//            Log.i(TAG,"sb = "+sb.toString());
+//        } catch (IOException e) {
+//            Log.e(TAG, ""+e.toString());
+//            e.printStackTrace();
+//        } finally {
+//            if (reader != null) {
+//                try {
+//                    reader.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//    }
+
+    private String readStream(InputStream in) {
 
         Log.i(TAG,"readStream()");
 
         BufferedReader reader = null;
+        StringBuffer sb = null;
         try {
             reader = new BufferedReader(new InputStreamReader(in));
             String line = "";
-            StringBuffer sb = new StringBuffer();
+            sb = new StringBuffer();
 
 
             while ((line = reader.readLine()) != null) {
-                sb.append(line+"\n");
+                sb = sb.append(line+"\n");
             }
 
             Log.i(TAG,"sb = "+sb.toString());
@@ -836,7 +910,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 }
             }
         }
+
+        return (sb ==null) ? "":sb.toString();
     }
+
 
     public String md5(String string) {
         byte[] hash;
@@ -855,6 +932,338 @@ public class MainActivity extends Activity implements View.OnClickListener{
         return hex.toString();
     }
 
+
+    private void installApk(File f){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(
+                Uri.fromFile(f),
+                "application/vnd.android.package-archive");
+        startActivity(intent);
+    }
+
+    private void testInstall(){
+
+//        File apkFile = new File("/sdcard/test");
+        File apkFile = new File(Environment.getExternalStorageDirectory(),packageName+".apk");
+
+        if(apkFile.exists()){
+            Log.i(TAG,"文件存在");
+            Toast.makeText(this,"文件已存在",Toast.LENGTH_SHORT).show();
+        } else {
+            Log.i(TAG,"文件不存在");
+            Toast.makeText(this,"文件不存在",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        installApk(apkFile);
+    }
+
+    /**
+     *  弹出对话框通知用户更新程序
+     *  弹出对话框的步骤：
+     *  1.创建alertDialog的builder.
+     *  2.要给builder设置属性, 对话框的内容,样式,按钮
+     *  3.通过builder 创建一个对话框
+     *  4.对话框show()出来
+     *  @param url
+     */
+    private void showUpdataDialog(final String url) {
+
+        final AlertDialog.Builder builer = new AlertDialog.Builder(this) ;
+        builer.setTitle("版本升级");
+        builer.setMessage("有最新的版本");
+        //当点确定按钮时从服务器上下载 新的apk 然后安装
+        builer.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i(TAG, "下载apk,更新");
+                downLoadApk(url);
+            }
+        });
+        //当点取消按钮时进行登录
+        builer.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // TODO Auto-generated method stub
+//                dialog.dismiss();
+            }
+        });
+        AlertDialog dialog = builer.create();
+        dialog.show();
+    }
+
+    /**
+     * 测试　更新
+     */
+    private void testCheckUpdate(){
+        Log.i(TAG,"testRegister() ");
+        URL url = null;
+        HttpURLConnection con = null;
+        OutputStream output = null;
+        InputStream in = null;
+        try {
+            url = new URL(SERVER_HOST+"update");
+            Log.i(TAG,"url="+url.toString());
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            con.setConnectTimeout(10000);
+
+            JSONObject json=new JSONObject();
+            try {
+                json.put("package_name",packageName);
+                json.put("version_code",versionCode);
+                json.put("version_name",versionName);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            output = con.getOutputStream();
+            output.write(json.toString().getBytes());
+
+            Log.i(TAG, "检查更新：　" + json.toString());
+            String tmp = readStream(con.getInputStream());
+            if(TextUtils.isEmpty(tmp)){
+                Log.i(TAG,"null  null");
+            } else {
+                JSONObject tmp_json = new JSONObject(tmp);
+                String rspcode = tmp_json.getString("rspcode");
+                Message msg = new Message();
+
+                if(rspcode.equals("0000")){
+//                    Log.i(TAG,"0000");
+                    msg.what = MSG_UPDATE_SUCCESS;
+                    msg.obj = tmp_json.toString(); //tmp_json.getString("msg");
+                    mHandle.sendMessage(msg);
+                } else if(rspcode.equals("0001")){
+                    msg.what = MSG_UPLOAD_FAIL;
+                    msg.obj = tmp_json.getString("msg");
+                    mHandle.sendMessage(msg);
+                } else if(rspcode.equals("0002")){
+                    msg.what = MSG_UPLOAD_FAIL;
+                    msg.obj = tmp_json.getString("msg");
+                    mHandle.sendMessage(msg);
+                }
+            }
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            Log.e(TAG,e.toString());
+        } catch (IOException e) {
+            Log.e(TAG,e.toString());
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } finally {
+            if(con != null) con.disconnect();
+            if(output != null) try {
+                output.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private File downloadFile(String str_url, ProgressDialog pd){
+        URL url = null;
+        HttpURLConnection con = null;
+        OutputStream output = null;
+        InputStream in = null;
+        File f = null;
+
+        try {
+            url = new URL(str_url);
+
+            Log.i(TAG, "url=" + url.toString());
+            con = (HttpURLConnection) url.openConnection();
+
+            con.setRequestMethod("POST");
+            con.setConnectTimeout(10000);
+
+            JSONObject json = new JSONObject();
+            json.put("package_name",packageName);
+
+
+
+            writeStream(con.getOutputStream(),json.toString().getBytes());
+
+
+
+//                InputStream in = new BufferedInputStream(con.getInputStream());
+            in = con.getInputStream();
+
+            String length = con.getHeaderField("length");
+            Log.i(TAG,"length = "+length);
+            pd.setMax(Integer.parseInt(length));
+//            pd.setMax(921762);
+
+            f = new File(Environment.getExternalStorageDirectory(),packageName+".apk");
+            if (!f.exists()) {
+                f.createNewFile();
+                Log.i(TAG, "创建新文件 /sdcard/Buddha.apk ");
+            }
+
+            output = new FileOutputStream(f);
+
+//            byte data[] = new byte[MAXBufferSize];
+            byte data[] = new byte[4*1024];
+            long total = 0;
+            int count;
+            while (((count = in.read(data)) != -1) && isRunning) {
+
+                output.write(data, 0, count);
+                total += count;
+                pd.setProgress((int)total);
+            }
+            Log.i(TAG, "下载完成  time = " + System.currentTimeMillis()+", total="+total+" ,isRunning="+isRunning);
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            Log.e(TAG, e.toString());
+
+//                mHandle.sendEmptyMessage(MSG_DOWNLOAD_FAIL);
+
+        } catch (IOException e) {
+            Log.e(TAG, e.toString());
+            e.printStackTrace();
+//                mHandle.sendEmptyMessage(MSG_DOWNLOAD_FAIL);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } finally {
+
+            Log.i(TAG,"finally");
+
+            if (con != null) con.disconnect();
+            if (output != null) try {
+                output.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (in != null) try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return f;
+    }
+
+    private boolean isRunning = true;
+
+    private void downLoadApk(final String url) {
+
+        isRunning = true;
+        final ProgressDialog pd;    //进度条对话框
+        pd = new  ProgressDialog(this);
+        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        pd.setMessage("正在下载更新");
+        pd.setCancelable(false);
+        pd.setButton(DialogInterface.BUTTON_NEGATIVE,"取消",new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i(TAG,"进度条　取消 点击");
+
+                Toast.makeText(MainActivity.this,"取消更新",Toast.LENGTH_SHORT).show();
+
+                isRunning = false;
+
+                pd.dismiss();
+//                if(tt != null && tt.isAlive()){
+//                    Log.i(TAG,"线程　停止");
+//                    tt.interrupt();
+//                }
+
+//                pd.cancel();
+//                pd.isShowing()
+            }
+        });
+        pd.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                Log.i(TAG,"进度条　oncancel");
+            }
+        });
+        pd.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+
+                    File f = downloadFile(url,pd);
+//                    sleep(1000);
+                    if(f!=null && isRunning){
+                        installApk(f);
+                        pd.dismiss(); //结束掉进度条对话框
+                    }
+                } catch (Exception e) {
+//                    Message msg = new Message();
+//                    msg.what = DOWN_ERROR;
+//                    handler.sendMessage(msg);
+                    Log.e(TAG,e.toString());
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void testProgress(){
+
+        // 创建ProgressDialog对象
+        final ProgressDialog pd = new ProgressDialog(this);
+        // 设置进度条风格，风格为长形
+        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        // 设置ProgressDialog 标题
+        pd.setTitle("提示");
+        // 设置ProgressDialog 提示信息
+        pd.setMessage("这是一个长形对话框进度条");
+        // 设置ProgressDialog 标题图标
+//        progressDialog.setIcon(R.drawable.a);
+        // 设置ProgressDialog 进度条进度
+        pd.setProgress(100);
+        // 设置ProgressDialog 的进度条是否不明确
+        pd.setIndeterminate(false);
+        // 设置ProgressDialog 是否可以按退回按键取消
+        pd.setCancelable(true);
+        //设置　取消按钮
+        pd.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i(TAG, "进度条　取消 点击");
+
+                isRunning = false;
+                pd.dismiss();
+            }
+        });
+        //设置　cancel 监听
+        pd.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                pd.cancel();
+            }
+        });
+
+        //设置最大值
+//        pd.setMax();
+
+        // 让ProgressDialog显示
+        pd.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int count = 0;
+                while(count <= 100){
+                    pd.setProgress(count++);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                pd.dismiss();
+            }
+        }).start();
+    }
+
     @Override
     public void onClick(View v) {
         if(mBtGet == v){
@@ -863,15 +1272,12 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 @Override
                 public void run() {
                     try {
-                        //Your code goes here
-                        test("GET");
-//                        makeGetRequest();
+                        testGet();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             });
-
             thread.start();
 
         } else if(mBtPost == v){
@@ -880,24 +1286,19 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 @Override
                 public void run() {
                     try {
-                        //Your code goes here
-                        test("POST");
-//                        makeGetRequest();
+                        testPost();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             });
-
             thread.start();
         } else if(mBtDownload == v){
             Thread thread = new Thread(new Runnable(){
                 @Override
                 public void run() {
                     try {
-                        //Your code goes here
-                        test("DOWNLOAD");
-//                        makeGetRequest();
+                        download();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -911,9 +1312,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 @Override
                 public void run() {
                     try {
-                        //Your code goes here
-                        test("UPLOAD");
-//                        makeGetRequest();
+                        upload();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -926,7 +1325,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 @Override
                 public void run() {
                     try {
-                        test("UPLOAD_2");
+                        upload_2();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -939,7 +1338,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 @Override
                 public void run() {
                     try {
-                        test("UPLOAD_3");
+                        upload_3();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -952,7 +1351,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 @Override
                 public void run() {
                     try {
-                        test("UPLOAD_4");
+                        upload_4();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -985,6 +1384,22 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 public void run() {
                     try {
                         testLogin();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            thread.start();
+        } else if(mBtProgress == v){
+            testProgress();
+        } else if(mBtInstall == v){
+            testInstall();
+        } else if(mBtUpdate == v){
+            Thread thread = new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    try {
+                        testCheckUpdate();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

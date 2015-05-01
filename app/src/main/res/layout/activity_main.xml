@@ -5,80 +5,120 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/bt_get"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TEST GET"/>
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/bt_post"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_get"
-        android:text="TEST POST"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/bt_download"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_post"
-        android:text="TEST DOWNLOAD"/>
+            <TextView
+                android:id="@+id/tv_apkinfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="apkInfo"/>
 
-    <Button
-        android:id="@+id/bt_upload"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_download"
-        android:text="TEST UPLOAD [方法1：字节流]"/>
+            <Button
+                android:id="@+id/bt_get"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_apkinfo"
+                android:text="TEST GET"/>
 
-    <Button
-        android:id="@+id/bt_upload_2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_upload"
-        android:text="TEST UPLOAD [方法2: 字节流]"/>
+            <Button
+                android:id="@+id/bt_post"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_get"
+                android:text="TEST POST"/>
 
-    <Button
-        android:id="@+id/bt_upload_3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_upload_2"
-        android:text="TEST UPLOAD [方法2: 字符流]"/>
+            <Button
+                android:id="@+id/bt_download"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_post"
+                android:text="TEST DOWNLOAD"/>
 
-    <Button
-        android:id="@+id/bt_upload_4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_upload_3"
-        android:text="TEST UPLOAD [方法2: utf-8]"/>
+            <Button
+                android:id="@+id/bt_upload"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_download"
+                android:text="TEST UPLOAD [方法1：字节流]"/>
 
-<!--    <Button
-        android:id="@+id/bt_websocket_connect"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_upload_4"
-        android:text="WEBSOCKET CONNECT"/>
+            <Button
+                android:id="@+id/bt_upload_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_upload"
+                android:text="TEST UPLOAD [方法2: 字节流]"/>
 
-    <Button
-        android:id="@+id/bt_websocket_send"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_websocket_connect"
-        android:text="TEST WEBSOCKET SEND"/>-->
+            <Button
+                android:id="@+id/bt_upload_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_upload_2"
+                android:text="TEST UPLOAD [方法2: 字符流]"/>
 
-    <Button
-        android:id="@+id/bt_register"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_upload_4"
-        android:text="TEST REGISTER"/>
+            <Button
+                android:id="@+id/bt_upload_4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_upload_3"
+                android:text="TEST UPLOAD [方法2: utf-8]"/>
 
-    <Button
-        android:id="@+id/bt_login"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bt_register"
-        android:text="TEST LOGIN"/>
+            <!--    <Button
+                    android:id="@+id/bt_websocket_connect"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/bt_upload_4"
+                    android:text="WEBSOCKET CONNECT"/>
+
+                <Button
+                    android:id="@+id/bt_websocket_send"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/bt_websocket_connect"
+                    android:text="TEST WEBSOCKET SEND"/>-->
+
+            <Button
+                android:id="@+id/bt_register"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_upload_4"
+                android:text="TEST REGISTER"/>
+
+            <Button
+                android:id="@+id/bt_login"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_register"
+                android:text="TEST LOGIN"/>
+
+            <Button
+                android:id="@+id/bt_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_login"
+                android:text="测试进度条" />
+
+            <Button
+                android:id="@+id/bt_install"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_progress"
+                android:text="安装apk" />
+
+            <Button
+                android:id="@+id/bt_update"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/bt_install"
+                android:text="检查更新" />
+
+        </RelativeLayout>
+
+    </ScrollView>
 
 </RelativeLayout>
